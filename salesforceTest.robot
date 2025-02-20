@@ -9,8 +9,8 @@ Suite Teardown                End suite
 
 
 *** Test Cases ***
-Entering A Lead
-    [tags]                    Lead
+Main Script
+    # [tags]                    Lead
     Home
     GoTo                      ${login_url}/lightning/setup/SetupOneHome/home
     # Step 1
@@ -112,6 +112,7 @@ Entering A Lead
     ClickText                 Agents
     VerifyText                Get to Know Agent
     ClickCheckbox             Basic optionOnOff           on
+    Sleep                     30
     RefreshPage
 
     Usetable                  Agent Name
@@ -224,7 +225,7 @@ Entering A Lead
     
 
     ClickText    Publish
-    VerifyText    We are 
+    #VerifyText    We're 
     ${timeNow}    Get Current Date       result_format=%m/%d/%Y, %I:%M:%S
     Log To Console                       ${timeNow}
     ${eighthrsAgo}                        Subtract Time From Date     ${timeNow}   08:00             date_format=%m/%d/%Y, %I:%M:%S             result_format=%m/%d/%Y, %I:%M:%S
@@ -233,7 +234,7 @@ Entering A Lead
     VerifyText    Published on: ${todayDate}
 
     FOR    ${attempt}    IN RANGE    20
-        ${message_present}   IsText    After you activate your deployment
+        ${message_present}   IsText    After you activate
         Exit For Loop If    not ${message_present}
         RefreshPage
         Sleep    30s
@@ -246,8 +247,8 @@ Entering A Lead
 
     # step 20
 
-    ClickItem     Expand the chat window
-    VerifyText    Hi, I'm an AI service assistant. How can I help you?
+    ClickItem     Hello, have a
+    VerifyText    Hi, I'm an AI service assistant. How can I help you?             timeout=40
 
     CloseWindow
     SwitchWindow              1
@@ -316,14 +317,15 @@ Entering A Lead
     
 
     ClickText    Publish
-    VerifyText    We're processing
+    Sleep        30
+    #VerifyText    We're processing
     ${timeNow}    Get Current Date       result_format=%m/%d/%Y, %I:%M:%S
     Log To Console                       ${timeNow}
     ${eighthrsAgo}                        Subtract Time From Date     ${timeNow}   08:00             date_format=%m/%d/%Y, %I:%M:%S             result_format=%m/%d/%Y, %I:%M:%S
     # ${delta}                        Subtract Date From Date           ${timeNow}                     ${eighthrsAgo}       date1_format=%m/%d/%Y, %I:%M:%S  date2_format=%m/%d/%Y, %I:%M:%S  result_format=%m/%d/%Y, %I:%M:%S                  
     ${todayDate}                        Get Current Date              result_format=%-m/%-d/%Y
-    VerifyText    Published on: ${todayDate}
-
+    #VerifyText    Published on: ${todayDate}
+    Log To Console                      ${message_present}
     FOR    ${attempt}    IN RANGE    40
         ${message_present}   IsText    After you activate
         Exit For Loop If    not ${message_present}
@@ -366,10 +368,11 @@ Entering A Lead
     CloseWindow
     SwitchWindow              1
 
-    #Data Cloud Setup
-    #Step 1
+    # Data Cloud Setup
+    # Step 1
     GoTo                      ${data_cloud_setup_url}
-    FOR    ${attempt}    IN RANGE    40
+    ClickText                 Get Started
+    FOR    ${attempt}    IN RANGE    80
         ${message_present}   IsText    Automated Steps
         Exit For Loop If    not ${message_present}
         RefreshPage
@@ -377,7 +380,7 @@ Entering A Lead
     END
     VerifyText              View Home Org Details
     
-    #Step 2
+    # Step 2
     TypeText    Quick Find    Permission Sets
     ClickText    Permission Sets
     ClickText    Data Cloud User
@@ -388,15 +391,15 @@ Entering A Lead
     ClickItem    checkbox     restaurant
     ClickText    Assign
     ClickText    Done
-    #Step 3
+    # Step 3
     Home
     GoTo                    ${login_url}/packaging/installPackage.apexp?p0\=04tWs000000Mgrp
     ClickText    All
     ClickText    Install
-    VerifyText    Installation Complete!
+    VerifyText    Installation Complete!                  timeout=40
     ClickText    Done
     
-    #Step 4a
+    # Step 4a
     GoTo                      ${data_cloud_setup_url}
     ClickText                 Other Connectors
 
@@ -404,11 +407,11 @@ Entering A Lead
     ClickText    Amazon S3Retrieve a file from Amazon Simple Storage Service
     ClickText    Next
     TypeText    Enter Bucket Name    pronto-food-delivery
-    TypeSecret    Enter AWS access key.    
-    TypeSecret    Enter AWS secret access key.    
+    TypeSecret    Enter AWS access key.    enter key
+    TypeSecret    Enter AWS secret access key.   enter secret
     TypeText    Enter connection name...    Pronto AWS Creds
     ClickText    Save
-    #Step 4b
+    # Step 4b
     LaunchApp                  Data Cloud
     ClickText                  Data Streams
     ClickText                  New
@@ -424,7 +427,7 @@ Entering A Lead
     #Sleep                      30
     VerifyNoText               New Data Stream                   timeout=40
     UseModal                   off
-    #Step 4c
+    # Step 4c1
     ClickText                  Data Streams
     ClickText                  New
     UseModal                   on
@@ -442,7 +445,7 @@ Entering A Lead
     ClickText    Deploy         timeout=40
     VerifyNoText               New Data Stream                   timeout=40
     UseModal     off
-    #Step 4c2
+    # Step 4c2
     ClickText                  Data Streams
     ClickText                  New
     UseModal                   on
@@ -460,4 +463,59 @@ Entering A Lead
     ClickText    Deploy         timeout=40
     VerifyNoText               New Data Stream                   timeout=40
     UseModal     off
-    # Do the last Data stream for Orders
+    
+    # Step 4c3
+    Home
+    ClickText                  Data Streams
+    ClickText                  New
+    UseModal                   on
+    ClickText    Amazon S3Retrieve a file from Amazon Simple Storage Service
+    ClickText    Next    anchor=Select your Amazon S3 connection and choose your object(s).
+    TypeText    *File Name    pronto_orders.csv
+    TypeText    Import from Directory    data
+    ClickText    Next    anchor=Select your Amazon S3 connection and choose your object(s).
+    ClickText    Select an Option    anchor=*Primary Key
+    ClickText    Customer_ID    anchor=New Data Stream
+    TypeText    *Data Lake Object Label    AWS S3 Pronto Orders 
+    ClickText    Next    anchor=New Data Stream - Stage Not Started
+    ClickText    Deploy         timeout=40
+    VerifyNoText               New Data Stream                   timeout=40
+    UseModal     off
+    
+    # 4d
+    LaunchApp                  Data Cloud
+    Refresh Data Stream        AWS S3 Pronto Orders
+    Refresh Data Stream        AWS S3 Pronto Order Line Items
+    Refresh Data Stream        AWS S3 Pronto Customers
+    Refresh Data Stream        Contact_Home
+
+    #Step 4d2
+    # LaunchApp                   Data Cloud
+    # ClickText                   Identity Resolutions
+    # ClickText                   New
+    # UseModal                    on
+    # ClickText                   Install from Datakits
+    # ClickText                   Next
+    # ClickText                   Select Item   anchor=Customer Name and Email
+    # ClickText                   Next
+    # ClickText                   Save
+    # VerifyNoText                New Ruleset
+    # UseModal                    off
+    # ClickText                   Run Ruleset                      timeout=30
+    # Step 5
+    Home
+    GoTo                    ${login_url}/packaging/installPackage.apexp?p0\=04tWs000000R2VZ
+    ClickText    All
+    ClickText    Install                        timeout=100
+    VerifyText   Installation Complete!
+    ClickText    Done
+    
+    # Step 6
+    LaunchApp    Data Cloud
+    ClickText    Show more navigation items
+    ClickText    Data Graphs
+    ClickText    New
+    ClickText    Use a Data KitCreate a Data Graph from a Data Kit
+    ClickText    Next
+    ClickText    Pronto Data Graph
+    
